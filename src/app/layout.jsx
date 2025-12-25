@@ -9,7 +9,7 @@ export const metadata = {
   title: "SIMS PPOB-Melvin Austin Korwa",
   description: "Nutech Assignment FE test",
   icons: {
-    icon: "/Logo.png",
+    icon: "img/Logo.png",
   },
 };
 
