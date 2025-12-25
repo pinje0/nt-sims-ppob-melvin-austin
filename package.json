@@ -1,22 +1,33 @@
 {
-  "name": "sims-ppob",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.1",
-    "tailwindcss": "^4"
-  }
+    "name": "sims-ppob",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint"
+    },
+    "dependencies": {
+        "@hookform/resolvers": "^5.2.2",
+        "@reduxjs/toolkit": "^2.11.2",
+        "axios": "^1.13.2",
+        "depcheck": "^1.4.7",
+        "lucide-react": "^0.562.0",
+        "next": "16.1.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-hook-form": "^7.69.0",
+        "react-hot-toast": "^2.6.0",
+        "react-redux": "^9.2.0",
+        "yup": "^1.7.1"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4",
+        "@types/node": "^25.0.3",
+        "eslint": "^9",
+        "eslint-config-next": "16.1.1",
+        "eslint-plugin-unused-imports": "^4.3.0",
+        "tailwindcss": "^4"
+    }
 }
