@@ -2,22 +2,65 @@
 
 import { useSelector } from "react-redux";
 import Image from "next/image";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 export default function PromoBanner() {
   const { banners } = useSelector((state) => state.transaction);
+
   const scrollRef = useRef(null);
+  const autoScrollRef = useRef(null);
+
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // Filter out invalid banners
-  const validBanners =
-    banners?.filter((banner) => banner.banner_image && banner.banner_image !== "null") || [];
-
   const AUTO_SCROLL_INTERVAL = 4000;
-  const autoScrollRef = useRef(null);
 
+  // Filter valid banners
+  const validBanners =
+    banners?.filter(
+      (banner) =>
+        banner.banner_image &&
+        banner.banner_image !== "null" &&
+        typeof banner.banner_image === "string"
+    ) || [];
+
+  // Triple banners for infinite loop
+  const loopedBanners =
+    validBanners.length > 0 ? [...validBanners, ...validBanners, ...validBanners] : [];
+
+  // Reset scroll for infinite loop
+  const checkLoop = useCallback(() => {
+    if (!scrollRef.current) return;
+
+    const sectionWidth = scrollRef.current.scrollWidth / 3;
+    const currentScroll = scrollRef.current.scrollLeft;
+
+    if (currentScroll >= sectionWidth * 2) {
+      scrollRef.current.scrollLeft = sectionWidth;
+    } else if (currentScroll <= 0) {
+      scrollRef.current.scrollLeft = sectionWidth;
+    }
+  }, []);
+
+  // Scroll handler (stable)
+  const scroll = useCallback(
+    (direction) => {
+      if (!scrollRef.current) return;
+
+      const scrollAmount = 320;
+
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+
+      setTimeout(checkLoop, 300);
+    },
+    [checkLoop]
+  );
+
+  // Auto scroll
   useEffect(() => {
     if (!scrollRef.current || validBanners.length <= 1) return;
 
@@ -30,25 +73,18 @@ export default function PromoBanner() {
     return () => {
       clearInterval(autoScrollRef.current);
     };
-  }, [validBanners.length, isDragging]);
+  }, [validBanners.length, isDragging, scroll]);
 
-  // Triple the banners for infinite loop effect
-  const loopedBanners =
-    validBanners.length > 0 ? [...validBanners, ...validBanners, ...validBanners] : [];
-
+  // Start in middle copy
   useEffect(() => {
-    // Start at middle set for seamless loop
     if (scrollRef.current && validBanners.length > 0) {
-      const scrollWidth = scrollRef.current.scrollWidth / 3;
-      scrollRef.current.scrollLeft = scrollWidth;
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth / 3;
     }
   }, [validBanners.length]);
 
-  if (validBanners.length === 0) {
-    return null;
-  }
+  if (validBanners.length === 0) return null;
 
-  // Mouse drag handlers
+  // Mouse handlers
   const handleMouseDown = (e) => {
     setIsDragging(true);
     setStartX(e.pageX - scrollRef.current.offsetLeft);
@@ -59,8 +95,10 @@ export default function PromoBanner() {
   const handleMouseMove = (e) => {
     if (!isDragging) return;
     e.preventDefault();
+
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Scroll speed
+    const walk = (x - startX) * 2;
+
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -71,13 +109,12 @@ export default function PromoBanner() {
   };
 
   const handleMouseLeave = () => {
-    if (isDragging) {
-      setIsDragging(false);
-      scrollRef.current.style.cursor = "grab";
-    }
+    if (!isDragging) return;
+    setIsDragging(false);
+    scrollRef.current.style.cursor = "grab";
   };
 
-  // Touch drag handlers for mobile
+  // Touch handlers
   const handleTouchStart = (e) => {
     setIsDragging(true);
     setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
@@ -86,44 +123,16 @@ export default function PromoBanner() {
 
   const handleTouchMove = (e) => {
     if (!isDragging) return;
+
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX) * 2;
+
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
     checkLoop();
-  };
-
-  // Check and reset scroll position for infinite loop
-  const checkLoop = () => {
-    if (!scrollRef.current) return;
-
-    const scrollWidth = scrollRef.current.scrollWidth / 3;
-    const currentScroll = scrollRef.current.scrollLeft;
-
-    // If scrolled past right copy, reset to middle
-    if (currentScroll >= scrollWidth * 2) {
-      scrollRef.current.scrollLeft = scrollWidth;
-    }
-    // If scrolled past left copy, reset to middle
-    else if (currentScroll <= 0) {
-      scrollRef.current.scrollLeft = scrollWidth;
-    }
-  };
-
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const scrollAmount = 320;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-
-      // Check loop after scroll animation
-      setTimeout(checkLoop, 300);
-    }
   };
 
   return (
@@ -139,8 +148,9 @@ export default function PromoBanner() {
           }, AUTO_SCROLL_INTERVAL);
         }}
       >
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-gray-50 to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-gray-50 to-transparent z-10" />
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-12 bg-linear-to-r from-gray-50 to-transparent z-10" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-linear-to-l from-gray-50 to-transparent z-10" />
+
         <div
           ref={scrollRef}
           onMouseDown={handleMouseDown}
@@ -180,7 +190,6 @@ export default function PromoBanner() {
           ))}
         </div>
 
-        {/* Navigation Buttons */}
         {validBanners.length > 1 && (
           <>
             <button
