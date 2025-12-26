@@ -15,6 +15,23 @@ export default function PromoBanner() {
   const validBanners =
     banners?.filter((banner) => banner.banner_image && banner.banner_image !== "null") || [];
 
+  const AUTO_SCROLL_INTERVAL = 4000;
+  const autoScrollRef = useRef(null);
+
+  useEffect(() => {
+    if (!scrollRef.current || validBanners.length <= 1) return;
+
+    autoScrollRef.current = setInterval(() => {
+      if (!isDragging) {
+        scroll("right");
+      }
+    }, AUTO_SCROLL_INTERVAL);
+
+    return () => {
+      clearInterval(autoScrollRef.current);
+    };
+  }, [validBanners.length, isDragging]);
+
   // Triple the banners for infinite loop effect
   const loopedBanners =
     validBanners.length > 0 ? [...validBanners, ...validBanners, ...validBanners] : [];
@@ -113,7 +130,17 @@ export default function PromoBanner() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h3 className="text-sm font-semibold text-gray-700 mb-4">Temukan promo menarik</h3>
 
-      <div className="relative">
+      <div
+        className="relative"
+        onMouseEnter={() => clearInterval(autoScrollRef.current)}
+        onMouseLeave={() => {
+          autoScrollRef.current = setInterval(() => {
+            if (!isDragging) scroll("right");
+          }, AUTO_SCROLL_INTERVAL);
+        }}
+      >
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-gray-50 to-transparent z-10" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-gray-50 to-transparent z-10" />
         <div
           ref={scrollRef}
           onMouseDown={handleMouseDown}
@@ -158,14 +185,15 @@ export default function PromoBanner() {
           <>
             <button
               onClick={() => scroll("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700 text-xl font-bold z-10"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center hover:bg-white transition z-20"
               aria-label="Scroll left"
             >
               ‹
             </button>
+
             <button
               onClick={() => scroll("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700 text-xl font-bold z-10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center hover:bg-white transition z-20"
               aria-label="Scroll right"
             >
               ›
