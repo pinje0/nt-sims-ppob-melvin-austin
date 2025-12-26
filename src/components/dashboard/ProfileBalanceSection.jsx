@@ -28,7 +28,7 @@ export default function ProfileBalanceSection() {
     profile.profile_image !== "" &&
     typeof profile.profile_image === "string" &&
     profile.profile_image.startsWith("http") &&
-    !profile.profile_image.includes("/null"); // ← FIX: Check if URL contains "/null"
+    !profile.profile_image.includes("/null"); // Check if URL contains "/null"
 
   const profileImageSrc = hasValidProfileImage ? profile.profile_image : "/img/profile-photo.png";
 
@@ -64,7 +64,7 @@ export default function ProfileBalanceSection() {
         </div>
 
         {/* Balance Card */}
-        <div className="relative rounded-2xl overflow-hidden shadow-lg h-[161px]">
+        <div className="relative rounded-2xl overflow-hidden shadow-lg h-40.25">
           {/* Background Image */}
           <Image
             src="/img/background-saldo.png"

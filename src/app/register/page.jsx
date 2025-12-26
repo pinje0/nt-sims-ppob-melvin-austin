@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
       const response = await authAPI.register(registerData);
 
-      // Cek response berdasarkan dokumentasi API
+      // Cek response API
       if (response.data.status === 0) {
         dispatch(registerSuccess());
         toast.success(response.data.message || "Registrasi berhasil silahkan login");

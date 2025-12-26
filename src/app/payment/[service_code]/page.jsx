@@ -10,7 +10,6 @@ import PaymentForm from "@/components/payment/PaymentForm";
 import PaymentModal from "@/components/payment/PaymentModal";
 import { api } from "@/lib/api";
 import { fetchBalance } from "@/store/slices/userSlice";
-import { fetchServices } from "@/store/slices/transactionSlice";
 import toast from "react-hot-toast";
 
 function PaymentContent() {
@@ -21,40 +20,20 @@ function PaymentContent() {
 
   const [selectedService, setSelectedService] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState("");
+  const [modalType, setModalType] = useState(""); // 'confirm', 'success', 'failed'
   const [loading, setLoading] = useState(false);
-  const [isLoadingServices, setIsLoadingServices] = useState(true);
 
-  // Fetch services if not loaded
   useEffect(() => {
-    const loadServices = async () => {
-      if (!services || services.length === 0) {
-        try {
-          await dispatch(fetchServices()).unwrap();
-        } catch (error) {
-          console.error("Failed to load services:", error);
-        }
-      }
-      setIsLoadingServices(false);
-    };
-
-    loadServices();
-  }, [dispatch, services]);
-
-  // Find service after services are loaded
-  useEffect(() => {
-    if (isLoadingServices) return; // Wait for services to load
-
+    // Find service by service_code from URL params
     const service = services.find((s) => s.service_code === params.service_code);
-
     if (service) {
       setSelectedService(service);
     } else {
-      // Only redirect if services are loaded but service not found
+      // If service not found, redirect to dashboard
       toast.error("Service tidak ditemukan");
       router.push("/dashboard");
     }
-  }, [params.service_code, services, router, isLoadingServices]);
+  }, [params.service_code, services, router]);
 
   const handleSubmit = () => {
     setModalType("confirm");
@@ -70,17 +49,20 @@ function PaymentContent() {
 
       if (response.data.status === 0) {
         setModalType("success");
+        // Refresh balance
         await dispatch(fetchBalance()).unwrap();
       } else {
         setModalType("failed");
       }
     } catch (error) {
-      console.error("Payment error:", error);
+      // Suppress console error for expected errors (400, 401)
+      if (error.response?.status !== 400 && error.response?.status !== 401) {
+        console.error("Payment error:", error);
+      }
+
       setModalType("failed");
 
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      }
+      const errorMessage = error.response?.data?.message || "Pembayaran gagal";
     } finally {
       setLoading(false);
     }
@@ -93,14 +75,10 @@ function PaymentContent() {
     }
   };
 
-  // Show loading while fetching services or finding service
-  if (isLoadingServices || !selectedService) {
+  if (!selectedService) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex items-center justify-center" style={{ height: "calc(100vh - 64px)" }}>
-          <div className="w-12 h-12 border-4 border-[#f42619] border-t-transparent rounded-full animate-spin" />
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#f42619] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

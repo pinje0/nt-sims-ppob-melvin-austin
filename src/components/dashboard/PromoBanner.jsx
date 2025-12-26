@@ -1,4 +1,3 @@
-// src/components/dashboard/PromoBanner.jsx
 "use client";
 
 import { useSelector } from "react-redux";
@@ -136,7 +135,7 @@ export default function PromoBanner() {
           {loopedBanners.map((banner, index) => (
             <div
               key={`${banner.banner_name}-${index}`}
-              className="shrink-0 w-75 h-37.5 relative rounded-lg overflow-hidden shadow-sm pointer-events-none"
+              className="shrink-0 w-80 h-37.5 relative rounded-lg overflow-hidden shadow-sm pointer-events-none"
               draggable={false}
             >
               <Image

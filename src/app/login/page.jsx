@@ -32,11 +32,11 @@ export default function LoginPage() {
 
       const response = await authAPI.login(data);
 
-      // Cek response berdasarkan dokumentasi API
+      // Check Response API
       if (response.data.status === 0) {
         const token = response.data.data.token;
 
-        // Simpan JWT token ke localStorage
+        // Store JWT on LocalStorage
         localStorage.setItem("token", token);
 
         dispatch(loginSuccess({ token }));

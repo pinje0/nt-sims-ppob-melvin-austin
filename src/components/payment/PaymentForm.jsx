@@ -1,4 +1,3 @@
-// src/components/payment/PaymentForm.jsx
 "use client";
 
 import Image from "next/image";

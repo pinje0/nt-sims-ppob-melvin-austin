@@ -1,4 +1,3 @@
-// src/components/account/ProfileForm.jsx
 "use client";
 
 import { AtSign, User } from "lucide-react";
