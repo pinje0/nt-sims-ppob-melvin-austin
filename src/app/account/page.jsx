@@ -7,11 +7,11 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Navbar from "@/components/layout/Navbar";
 import ProfileForm from "@/components/account/ProfileForm";
 import { api } from "@/lib/api";
-import { fetchProfile } from "@/store/slices/userSlice";
+import { fetchProfile, clearUser } from "@/store/slices/userSlice";
 import { logout } from "@/store/slices/authSlice";
-import { clearUser } from "@/store/slices/userSlice";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { sanitizePlainText } from "@/utils/sanitizeText";
 
 function AccountContent() {
   const router = useRouter();
@@ -52,15 +52,28 @@ function AccountContent() {
     });
   };
 
+  const nameRegex = /^[a-zA-Z\s]{2,50}$/;
+
   const handleSaveProfile = async () => {
-    if (!formData.first_name || !formData.last_name) {
-      toast.error("Nama depan dan nama belakang harus diisi");
+    const cleanFirstName = sanitizePlainText(formData.first_name);
+    const cleanLastName = sanitizePlainText(formData.last_name);
+
+    if (!nameRegex.test(cleanFirstName)) {
+      toast.error("Nama depan hanya boleh huruf dan spasi (2–50 karakter)");
+      return;
+    }
+
+    if (!nameRegex.test(cleanLastName)) {
+      toast.error("Nama belakang hanya boleh huruf dan spasi (2–50 karakter)");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await api.put("/profile/update", formData);
+      const response = await api.put("/profile/update", {
+        first_name: cleanFirstName,
+        last_name: cleanLastName,
+      });
 
       if (response.data.status === 0) {
         toast.success("Profile berhasil diupdate");
@@ -70,7 +83,6 @@ function AccountContent() {
         toast.error(response.data.message || "Gagal update profile");
       }
     } catch (error) {
-      console.error("Update profile error:", error);
       toast.error(error.response?.data?.message || "Gagal update profile");
     } finally {
       setLoading(false);
